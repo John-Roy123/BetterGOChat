@@ -4,6 +4,7 @@ import(
 	"bufio"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
@@ -26,24 +27,16 @@ func StartClient(){
 	name, _ := username.ReadString('\n')
 	conn.Write([]byte(name))
 
-
+	go serveGui()
 	openBrowser("http://localhost:3000") //serves the GUI
+}
 
-	go func(){
-		for{
-			message, err := bufio.NewReader(conn).ReadString('\n')
-			if err != nil{
-				fmt.Println("Disconnected from sever.")
-				return
-			}
-			fmt.Print(message)
-		}
-	}()
-
-	for{
-		input := bufio.NewReader(os.Stdin)
-		msg, _ := input.ReadString('\n')
-		conn.Write([]byte(msg))
+func serveGui(){
+	http.Handle("/", http.FileServer(http.Dir("./ui")))
+	fmt.Println("Serving GUI on http://localhost:3000")
+	err := http.ListenAndServe(":3000", nil)
+	if err != nil{
+		fmt.Println("Failed to start HTTP server", err)
 	}
 }
 

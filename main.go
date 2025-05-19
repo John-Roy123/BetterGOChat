@@ -14,6 +14,7 @@ func main(){
 
 	switch os.Args[1]{
 	case "server":
+		go server.StartWebSocketServer()
 		server.StartServer()
 	case "client":
 		client.StartClient()
