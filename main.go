@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"GOCHAT/server"
-	"GOCHAT/client"
+	"BetterGOChat/server"
+	"BetterGOChat/client"
 )
 
 func main(){

@@ -1,4 +1,4 @@
-module GOCHAT
+module BetterGOChat
 
 go 1.24.3
 

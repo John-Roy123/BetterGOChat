@@ -95,6 +95,7 @@ func handleBroadcast(){
 				fmt.Println("Error sending message to client: ", err)
 			}
 		}
+		wsBroadcast <- msg
 		mutex.Unlock()
 	}
 	//^^Loops over and continuously updates clients with the current messages
