@@ -1,14 +1,16 @@
 package client
 
-import(
+import (
 	"bufio"
 	"fmt"
 	"net"
 	"net/http"
 	"os"
 	"os/exec"
-	"runtime"
 	"path/filepath"
+	"runtime"
+	"strings"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -21,6 +23,23 @@ func StartClient(){
 	var ip string
 	fmt.Print("Enter server IP: ")
 	fmt.Scanln(&ip)
+	var wsIP string
+		wsIP = func()string{
+			if 5 >= len(ip) {
+				return ""
+			}
+    		return ip[:len(ip)-5]
+		}()
+	go func(){
+		var err error
+		wsURL := fmt.Sprintf("ws://%s:8081/ws", wsIP)
+		wsConn, _, err = websocket.DefaultDialer.Dial(wsURL, nil)
+		if err != nil{
+			fmt.Println("Websocket connection failed: ", err)
+			return
+		}
+	}()
+
 
 	conn, err := net.Dial("tcp", ip)
 	if err != nil{
@@ -48,7 +67,8 @@ func StartClient(){
 	
 	go connectWebSocket()
 	go serveGui()
-	openBrowser("http://localhost:3000") //serves the GUI
+	name = strings.TrimSpace(name)
+	openBrowser(fmt.Sprintf("http://localhost:3000?serverip=%s&user=%s", wsIP, name)) //serves the GUI with the serverip in the url
 	select{}
 }
 

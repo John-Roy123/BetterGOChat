@@ -1,7 +1,12 @@
 let socket
+let username
 
 window.onload = () => {
-    socket = new WebSocket("ws://localhost:8081")
+    const urlParams =  new URLSearchParams(window.location.search)
+    const serverIP = urlParams.get("serverip")
+    username = urlParams.get("user")
+    console.log(serverIP)
+    socket = new WebSocket(`ws://${serverIP}:8081/ws`)
 
     socket.onmessage = (event) =>{
         const output = document.getElementById("output")
@@ -18,10 +23,11 @@ window.onload = () => {
 }
 
 function sendMessage(){
-    const message = document.getElementById("message").value
+    const message = '['+username+']: ' + document.getElementById("message").value
     if(message.trim()){
         socket.send(message)
         document.getElementById("message").value = ""
     }
 
 }
+

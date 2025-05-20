@@ -9,6 +9,8 @@ import(
 	"os"
 )
 
+
+
 type Client struct{
 	conn net.Conn
 	username string

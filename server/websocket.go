@@ -32,7 +32,8 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request){
 	wsMutex.Lock()
 	wsClients[conn] = true
 	wsMutex.Unlock()
-	fmt.Println("New WebSocket client connected")
+
+	defer conn.Close()
 
 	for{
 		_, msg, err := conn.ReadMessage()
@@ -42,15 +43,16 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request){
 			delete(wsClients, conn)
 			wsMutex.Unlock()
 			conn.Close()
-			return
+			break
 		}
 		wsBroadcast <- string(msg)
+		
 	}
 }
 
 func handleWebSocketBroadcast(){
 	for{
-		message := <-wsBroadcast
+		message := <- wsBroadcast
 		fmt.Println("Broadcasting message to WebSocket clients: ", message)
 
 		wsMutex.Lock()
