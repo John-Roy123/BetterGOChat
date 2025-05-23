@@ -4,7 +4,9 @@ import(
 	"fmt"
 	"net/http"
 	"sync"
-
+	"strings"
+	"BetterGOChat/database"
+	"BetterGOChat/models"
 	"github.com/gorilla/websocket"
 )
 
@@ -22,32 +24,38 @@ func StartWebSocketServer(){
 	http.ListenAndServe(":8081", nil)
 }
 
-func handleWebSocket(w http.ResponseWriter, r *http.Request){
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil{
-		fmt.Println("WebSocket upgrade failed", err)
-		return
-	}
+func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+    conn, err := upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        fmt.Println("WebSocket upgrade failed", err)
+        return
+    }
 
-	wsMutex.Lock()
-	wsClients[conn] = true
-	wsMutex.Unlock()
+    wsMutex.Lock()
+    wsClients[conn] = true
+    wsMutex.Unlock()
 
-	defer conn.Close()
+    defer conn.Close()
 
-	for{
-		_, msg, err := conn.ReadMessage()
-		if err != nil{
-			fmt.Println("WebSocket client disconnected")
-			wsMutex.Lock()
-			delete(wsClients, conn)
-			wsMutex.Unlock()
-			conn.Close()
-			break
-		}
-		wsBroadcast <- string(msg)
-		
-	}
+    for {
+        _, msg, err := conn.ReadMessage()
+        if err != nil {
+            fmt.Println("WebSocket client disconnected")
+            wsMutex.Lock()
+            delete(wsClients, conn)
+            wsMutex.Unlock()
+            break
+        }
+        // Save message to database
+        message := models.Message{
+            Username: strings.Split(string(msg), ":")[0][1:], // Extract username from "[username]: message"
+            Text: strings.Split(string(msg), ":")[1],         // Extract message content
+        }
+        database.DB.Create(&message)
+        
+        // Broadcast message
+        wsBroadcast <- string(msg)
+    }
 }
 
 func handleWebSocketBroadcast(){

@@ -1,14 +1,12 @@
 let socket
-let username
 const inputPrompt = document.getElementById("message")
+const urlParams =  new URLSearchParams(window.location.search)
+const serverIP = urlParams.get("serverip")
+const username = urlParams.get("user")
 
 window.onload = () => {
-    const urlParams =  new URLSearchParams(window.location.search)
-    const serverIP = urlParams.get("serverip")
-    username = urlParams.get("user")
     console.log(serverIP)
     socket = new WebSocket(`ws://${serverIP}:8081/ws`)
-
     socket.onmessage = (event) =>{
         const output = document.getElementById("output")
         output.innerHTML += event.data + "<br>"
@@ -23,14 +21,15 @@ window.onload = () => {
     }
 }
 
-function sendMessage(){
-    const message = '['+username+']: ' + inputPrompt.value
-    if(message.trim()){
-        socket.send(message)
-        inputPrompt.value = ""
+function sendMessage() {
+    const rawMessage = inputPrompt.value
+    const message = '['+username+']: ' + rawMessage
+    if(message.trim()) {
+        socket.send(message);
+        inputPrompt.value = "";
     }
-
 }
+
 
 document.querySelector('#message').addEventListener('keypress', function(e){
     if(e.key === 'Enter'){

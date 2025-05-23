@@ -3,8 +3,6 @@ package server
 import (
 	"BetterGOChat/database"
 	"BetterGOChat/models"
-	"BetterGOChat/routes"
-	"github.com/gorilla/mux"
 	"bufio"
 	"fmt"
 	"net"
@@ -26,38 +24,37 @@ var(
 	mutex = &sync.Mutex{} //Syncronizes the mutex data so users dont conflict
 )
 
-func StartServer(){
-	listener, err := net.Listen("tcp", ":8080")
-	if err != nil{
-		fmt.Println("Error starting server:", err)
-		return
-	}
-	defer listener.Close()
-	ipaddy := getThisIP()
-	database.Connect()
-	database.DB.AutoMigrate(&models.Message{})
+func StartServer() {
+    // Start TCP listener
+    listener, err := net.Listen("tcp", ":8080")
+    if err != nil {
+        fmt.Println("Error starting server:", err)
+        return
+    }
+    defer listener.Close()
+    
+    // Get IP and setup database
+    ipaddy := getThisIP()
+    database.Connect()
+    database.DB.AutoMigrate(&models.Message{})
 
-	router := mux.NewRouter()
-	routes.RegisterRoutes(router)
+    fmt.Printf("Server started on %s:8080\n", ipaddy)
 
-	fmt.Printf("Server started on %s:8080", ipaddy)
+    // Start broadcast handler
+    go handleBroadcast()
 
-	//^^ Server begins listening for tcp connections on port 8080, sets listener to close when server is shut down
-
-	go handleBroadcast() //opens a new thread to handle the server broadcasts
-
-	for{
-		conn, err := listener.Accept()
-		if err != nil{
-			fmt.Println("Connection error: ", err)
-			continue
-		}
-		fmt.Println("Client connected: ", conn.RemoteAddr())
-		go handleConnection(conn)
-	}
-	//^^ continuously loops to handle accepting new connections into the server - once it 
-	// catches a connection it opens a new thread to handle that specific user in the server.
+    // Handle TCP connections
+    for {
+        conn, err := listener.Accept()
+        if err != nil {
+            fmt.Println("Connection error: ", err)
+            continue
+        }
+        fmt.Println("Client connected: ", conn.RemoteAddr())
+        go handleConnection(conn)
+    }
 }
+
 
 func handleConnection(conn net.Conn){
 	defer conn.Close() //closes the connection on function completion
