@@ -1,5 +1,6 @@
 let socket
 let username
+const inputPrompt = document.getElementById("message")
 
 window.onload = () => {
     const urlParams =  new URLSearchParams(window.location.search)
@@ -23,11 +24,16 @@ window.onload = () => {
 }
 
 function sendMessage(){
-    const message = '['+username+']: ' + document.getElementById("message").value
+    const message = '['+username+']: ' + inputPrompt.value
     if(message.trim()){
         socket.send(message)
-        document.getElementById("message").value = ""
+        inputPrompt.value = ""
     }
 
 }
 
+document.querySelector('#message').addEventListener('keypress', function(e){
+    if(e.key === 'Enter'){
+        sendMessage()
+    }
+})
