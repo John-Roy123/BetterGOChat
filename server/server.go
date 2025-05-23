@@ -1,12 +1,16 @@
 package server
 
-import(
+import (
+	"BetterGOChat/database"
+	"BetterGOChat/models"
+	"BetterGOChat/routes"
+	"github.com/gorilla/mux"
 	"bufio"
 	"fmt"
 	"net"
+	"os"
 	"strings"
 	"sync"
-	"os"
 )
 
 
@@ -30,6 +34,12 @@ func StartServer(){
 	}
 	defer listener.Close()
 	ipaddy := getThisIP()
+	database.Connect()
+	database.DB.AutoMigrate(&models.Message{})
+
+	router := mux.NewRouter()
+	routes.RegisterRoutes(router)
+
 	fmt.Printf("Server started on %s:8080", ipaddy)
 
 	//^^ Server begins listening for tcp connections on port 8080, sets listener to close when server is shut down

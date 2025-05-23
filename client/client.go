@@ -45,7 +45,7 @@ func StartClient(){
 		fmt.Println("Connection failed: ", err)
 		return
 	}
-	fmt.Println("Connected to chatroom!")
+	fmt.Println("Server found!")
 
 	fmt.Print("Enter your username: ")
 	username := bufio.NewReader(os.Stdin)
