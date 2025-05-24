@@ -74,7 +74,7 @@ func handleConnection(conn net.Conn){
 
 	//^^ Locks the Client struct so only this thread can access it, adds a new user to it, then unlocks
 	//so other threads can access it again - prevents deadlock
-
+	
 	broadcast <- fmt.Sprintf("%s has joined the chat! \r\n", username)
 
 	for{

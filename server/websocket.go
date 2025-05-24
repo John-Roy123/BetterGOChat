@@ -35,6 +35,13 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
     wsClients[conn] = true
     wsMutex.Unlock()
 
+	//Populate message history
+	messages := getAllMessages()
+	for _, msg := range messages{
+		historyMsg := fmt.Sprintf("[%s: %s", msg.Username, msg.Text)
+		conn.WriteMessage(websocket.TextMessage, []byte(historyMsg))
+	}
+
     defer conn.Close()
 
     for {
@@ -75,4 +82,10 @@ func handleWebSocketBroadcast(){
 		}
 		wsMutex.Unlock()
 	}
+}
+
+func getAllMessages() []models.Message{
+	var messages []models.Message
+	database.DB.Order("id asc").Find(&messages)
+	return messages
 }
